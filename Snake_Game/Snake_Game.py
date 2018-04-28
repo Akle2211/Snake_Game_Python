@@ -9,7 +9,7 @@ from random import randint
 from function_Snake_Game import *
 
 
-##FUNCTIONS###
+###FUNCTIONS###
 
 # return where to add a pixel
 def amt_to_add(direction, x_or_y):
@@ -75,20 +75,14 @@ def drawing_pixel(to_draw, color):
 
 # check if a collision happened
 def collision(snakearray, food=2):
-    if type(food) is list:
-        if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
-            return True
+    if type(food) is list:  
+        if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:
+            return True     # food collision
         return False
 
     for body_part in snakearray[1:]:
         if snakearray[0][0] == body_part[0] and snakearray[0][1] == body_part[1]:
-            return True
-    return False
-
-
-def collision_food(snakearray, food):
-    if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
-        return True
+            return True     # self collision
     return False
 
 
@@ -147,7 +141,7 @@ while doexit == False:  # This is the game loop.
         drawing_pixel(food, 'red')
         update()
 
-        k = win.checkKey()  # register the last key that was pressed
+        k = win.checkKey()  # register last key pressed
         if k == "e":
             doexit = True  # Click e to exit!
         direction = check_key(k, direction)
