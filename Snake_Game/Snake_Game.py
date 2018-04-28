@@ -50,15 +50,14 @@ def check_key(k, direction):
         return direction
 
     else:
-        return direction
+        return direction    # no keys were pressed 
 
 
 def rand_food_pos():
-    temp = [randint(0, size_of_win-1), randint(0, size_of_win-1)]
-    return temp
+    return [randint(0, size_of_win-1), randint(0, size_of_win-1)]
 
 
-# draws either one set of position or an array of position
+# draws either one set of position or an array of positions
 # https://stackoverflow.com/questions/998938/handle-either-a-list-or-single-integer-as-an-argument
 def drawing_pixel(to_draw, color):
     for sub_list in to_draw:
