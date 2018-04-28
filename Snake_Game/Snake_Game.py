@@ -9,25 +9,14 @@ from random import randint
 from function_Snake_Game import *
 
 
-# ###FUNCTIONS###
+###FUNCTIONS###
 def rand_pos():
     return [randint(0, size_of_win-1), randint(0, size_of_win-1)]
 
 
-# draws either one set of position or an array of position
-# https://stackoverflow.com/questions/998938/handle-either-a-list-or-single-integer-as-an-argument
 def drawing_pixel(to_draw, color):
-    for sub_list in to_draw:
-        # draw food:
-        if type(sub_list) is not list:
-            sub_list = to_draw
-        # draw snake body:
-        xcoord = sub_list[0]*step
-        ycoord = sub_list[1]*step
-        a = Rectangle(Point(xcoord, ycoord), Point(xcoord + step, ycoord + step))
-        a.setFill(color)
-        a.draw(win)
-
+    a = calculate_drawing(to_draw, color, step)
+    a.draw(win)
 
 
 ###VARIABLES###
@@ -45,6 +34,78 @@ snakearray = [rand_pos()]  # first is the head of the snake
 fps = 0.005  # decrease me to make game faster
 refreshrate = 1/fps
 timeOld = round(time.time() * 1000)
+
+###VARIABLES NEURAL NETWORK###
+# for calculating closest dis
+# closestup = snakearray[0][1]
+# closestright = size_of_win - snakearray[0][0]
+# closestdown = size_of_win - snakearray[0][1]
+# closestleft = snakearray[0][0]
+closestup = 22
+closestright = 23
+closestdown = 18
+closestleft = 18
+food = [20, 20]
+
+score = 0
+begintime = time.time()  # time at the beginning of the game used for fitness
+runtime = time.time()
+fitness = 0
+
+
+###ARRAYS NEURAL NETWORK###
+# for network i will just try random array
+input_array = [closestup/size_of_win, closestdown/size_of_win, closestleft/size_of_win,
+               closestright/size_of_win, food[0]/size_of_win, food[1]/size_of_win]  # add the food coordinates
+
+print("input: ", input_array)
+input_array = sigmoid_neurons(input_array)
+print("input_array trough sigmoid: ", input_array)
+# weights_1 = [randomize_weight(input_array),
+#              randomize_weight(input_array),
+#              randomize_weight(input_array),
+#              randomize_weight(input_array),
+#              randomize_weight(input_array),
+#              randomize_weight(input_array)]
+weights_1 = [[1, 2, -2, 3, 0, -1],
+             [1, 2, -2, 3, 0, -1],
+             [1, 2, -2, 3, 0, -1],
+             [1, 2, -2, 3, 0, -1],
+             [1, 2, -2, 3, 0, -1],
+             [1, 2, -2, 3, 0, -1]]
+print("weights_1", weights_1)
+# bias1 = randomize_weight(input_array)
+bias1 = [1, 1, 1, 1, 1, 1]
+
+
+hidden_array = calculate_layer(input_array, weights_1, bias1, 6)
+print("hidden_array: ", hidden_array)
+hidden_array = sigmoid_neurons(hidden_array)
+print("hidden_array trough sigmoid: ", hidden_array)
+# weights_2 = [randomize_weight(input_array),
+#              randomize_weight(input_array),
+#              randomize_weight(input_array),
+#              randomize_weight(input_array),
+#              randomize_weight(input_array),
+#              randomize_weight(input_array)]
+weights_2 = [[-1, 0, -2, 3, 3, -1],
+             [-1, 0, -2, 3, 3, -1],
+             [-1, 0, -2, 3, 3, -1],
+             [-1, 0, -2, 3, 3, -1],
+             [-1, 0, -2, 3, 3, -1],
+             [-1, 0, -2, 3, 3, -1]]
+
+print("weights2", weights_2)
+# bias2 = randomize_weight(hidden_array)
+bias2 = [1, 1, 1, 1, 1, 1]
+
+outputarray = calculate_layer(hidden_array, weights_2, bias2, 4)
+print("outputarray: ", outputarray)
+outputarray = sigmoid_neurons(outputarray)
+print("outputarray trough sigmoid: ", outputarray)
+
+print("")
+print("")
 
 
 ###RUNNING###

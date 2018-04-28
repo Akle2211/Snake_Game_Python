@@ -16,7 +16,7 @@ from random import randint
 
 # SIGMOID FUNCTION
 def sigmoid(x):  # not going to define e to make it easier, just going to use the decimal value for it
-    return 1/((2.718281828459**-x) + 1)
+    return 1/(1 + 2.718281828459**-x)
 
 
 # return where to add a pixel
@@ -35,6 +35,21 @@ def clear(win):
     for item in win.items[:]:
         item.undraw()
     # win.update()
+
+
+# returns either one set of position or an array of position
+# https://stackoverflow.com/questions/998938/handle-either-a-list-or-single-integer-as-an-argument
+def calculate_drawing(to_draw, color, step):
+    for sub_list in to_draw:
+        if type(sub_list) is not list:  # draw food:
+            sub_list = to_draw
+
+        # else draw snake body
+        xcoord = sub_list[0]*step
+        ycoord = sub_list[1]*step
+        a = Rectangle(Point(xcoord, ycoord), Point(xcoord + step, ycoord + step))
+        a.setFill(color)
+        return a
 
 
 def check_key(k, direction):
@@ -75,11 +90,38 @@ def collision(snakearray, food=2):
     return False
 
 
-def collision_food(snakearray, food):
-    if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
-        return True
-    return False
-
-
 def timing():
     pass  # aint done yet
+
+
+###NEURAL NETWORK FUNCTIONS###
+def randomize_weight(input_neurons, low=-3, high=3):
+    temp = []
+    for neurons in input_neurons:
+        temp.append(randint(low, high))
+    return temp
+
+
+def calculate_layer(prev_layer, prev_weight_layer, bias_layer, desired_len):
+    total = 0
+    temp = []
+    for i in range(len(prev_weight_layer)):
+        temp_sub_weight = prev_weight_layer[i]
+        print("temp_sub_weight: ", temp_sub_weight)
+        for neuron, weight, bias in zip(prev_layer, temp_sub_weight, bias_layer):
+            total = total + (neuron*weight) + bias
+        temp.append(total)
+        total = 0
+    return temp
+# https: // www.programiz.com/python-programming/methods/built-in/zip
+
+
+def create_weight_layer():
+    pass  # not created yet
+
+
+def sigmoid_neurons(neurons):
+    temp = []
+    for neuron in neurons:
+        temp.append(sigmoid(neuron))
+    return temp
