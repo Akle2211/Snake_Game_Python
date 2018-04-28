@@ -6,9 +6,10 @@
 from graphics import *
 import time
 from random import randint
+from function_Snake_Game import *
 
 
-###FUNCTIONS###
+##FUNCTIONS###
 
 # return where to add a pixel
 def amt_to_add(direction, x_or_y):
@@ -50,14 +51,14 @@ def check_key(k, direction):
         return direction
 
     else:
-        return direction    # no keys were pressed 
+        return direction
 
 
-def rand_food_pos():
+def rand_pos():
     return [randint(0, size_of_win-1), randint(0, size_of_win-1)]
 
 
-# draws either one set of position or an array of positions
+# draws either one set of position or an array of position
 # https://stackoverflow.com/questions/998938/handle-either-a-list-or-single-integer-as-an-argument
 def drawing_pixel(to_draw, color):
     for sub_list in to_draw:
@@ -72,6 +73,29 @@ def drawing_pixel(to_draw, color):
         a.draw(win)
 
 
+# check if a collision happened
+def collision(snakearray, food=2):
+    if type(food) is list:
+        if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
+            return True
+        return False
+
+    for body_part in snakearray[1:]:
+        if snakearray[0][0] == body_part[0] and snakearray[0][1] == body_part[1]:
+            return True
+    return False
+
+
+def collision_food(snakearray, food):
+    if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
+        return True
+    return False
+
+
+def timing():
+    pass  # aint done yet
+
+
 
 ###VARIABLES###
 step = 10
@@ -79,11 +103,11 @@ size_of_win = width = height = 40
 win = GraphWin('SNAKE', width*step, height*step, autoflush=False)
 win.setBackground('white')
 
-food = rand_food_pos()
+food = rand_pos()
 doexit = False  # for  exiting the game loop
 direction = 0  # 0 up, 1 right, 2 down, 3 left
 
-snakearray = [[10, 10]]  # first is the head of the snake
+snakearray = [rand_pos()]  # first is the head of the snake
 
 fps = 0.005  # decrease me to make game faster
 refreshrate = 1/fps
@@ -92,33 +116,36 @@ timeOld = round(time.time() * 1000)
 
 ###RUNNING###
 while doexit == False:  # This is the game loop.
+    time.sleep(0.001)
     timeCurrent = round(time.time() * 1000)
 
     if timeCurrent-timeOld > refreshrate:  # Frames per second stuff
         timeOld = timeCurrent
         clear(win)
 
-        c = Rectangle(Point(0, 0), Point(400, 400))
-        c.setFill('white')
-        c.draw(win)  # clear screen
+        # c = Rectangle(Point(0, 0), Point(400, 400))
+        # c.setFill('white')                                  #this code isn't necessary anymore !
+        # c.draw(win)  # clear screen
 
         headnewposarray = [snakearray[0][0] +
                            amt_to_add(direction, 'x'), snakearray[0][1] + amt_to_add(direction, 'y')]
 
-        snakearray.insert(0, headnewposarray)  # add new first element to the array
-        del snakearray[len(snakearray)-1]  # delete the last element on that copied array
+        snakearray.insert(0, headnewposarray)  # add head at beginning
+        del snakearray[len(snakearray)-1]  # delete last tail
 
-        drawing_pixel(snakearray, 'black')
+        if collision(snakearray):       # self collision ?
+            print("CRASHED!")
+            doexit = True
 
-        drawing_pixel(food, 'red')
-
-        update()
-
-        if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
-            food = rand_food_pos()
+        if collision(snakearray, food):  # food collision ?
+            food = rand_pos()
             print("YUM")
             # add the latest element to the snake's body
             snakearray.append(snakearray[len(snakearray)-1])
+
+        drawing_pixel(snakearray, 'black')
+        drawing_pixel(food, 'red')
+        update()
 
         k = win.checkKey()  # register the last key that was pressed
         if k == "e":
