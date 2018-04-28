@@ -14,6 +14,11 @@ from random import randint
 
 ###FUNCTIONS###
 
+# SIGMOID FUNCTION
+def sigmoid(x):  # not going to define e to make it easier, just going to use the decimal value for it
+    return 1/((2.718281828459**-x) + 1)
+
+
 # return where to add a pixel
 def amt_to_add(direction, x_or_y):
     if direction == 1 and x_or_y == 'x' or direction == 2 and x_or_y == 'y':
@@ -57,21 +62,24 @@ def check_key(k, direction):
         return direction
 
 
-def rand_food_pos(size_of_win):
-    temp = [randint(0, size_of_win-1), randint(0, size_of_win-1)]
-    return temp
+# check if a collision happened
+def collision(snakearray, food=2):
+    if type(food) is list:
+        if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
+            return True
+        return False
+
+    for body_part in snakearray[1:]:
+        if snakearray[0][0] == body_part[0] and snakearray[0][1] == body_part[1]:
+            return True
+    return False
 
 
-# draws either one set of position or an array of position
-# https://stackoverflow.com/questions/998938/handle-either-a-list-or-single-integer-as-an-argument
-def drawing_pixel(to_draw, color):
-    for sub_list in to_draw:
-        # draw food:
-        if type(sub_list) is not list:
-            sub_list = to_draw
-        # draw snake body:
-        xcoord = sub_list[0]*step
-        ycoord = sub_list[1]*step
-        a = Rectangle(Point(xcoord, ycoord), Point(xcoord + step, ycoord + step))
-        a.setFill(color)
-        a.draw(win)
+def collision_food(snakearray, food):
+    if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
+        return True
+    return False
+
+
+def timing():
+    pass  # aint done yet
