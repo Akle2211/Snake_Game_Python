@@ -14,11 +14,6 @@ from random import randint
 
 ###FUNCTIONS###
 
-# SIGMOID FUNCTION
-def sigmoid(x):  # not going to define e to make it easier, just going to use the decimal value for it
-    return 1/(1 + 2.718281828459**-x)
-
-
 # return where to add a pixel
 def amt_to_add(direction, x_or_y):
     if direction == 1 and x_or_y == 'x' or direction == 2 and x_or_y == 'y':
@@ -37,9 +32,9 @@ def clear(win):
     # win.update()
 
 
-# returns either one set of position or an array of position
+# draws either one set of position or an array of position
 # https://stackoverflow.com/questions/998938/handle-either-a-list-or-single-integer-as-an-argument
-def calculate_drawing(to_draw, color, step):
+def drawing_pixel(to_draw, color, step, win):
     for sub_list in to_draw:
         if type(sub_list) is not list:  # draw food:
             sub_list = to_draw
@@ -49,7 +44,7 @@ def calculate_drawing(to_draw, color, step):
         ycoord = sub_list[1]*step
         a = Rectangle(Point(xcoord, ycoord), Point(xcoord + step, ycoord + step))
         a.setFill(color)
-        return a
+        a.draw(win)
 
 
 def check_key(k, direction):
@@ -90,38 +85,89 @@ def collision(snakearray, food=2):
     return False
 
 
+# calculate the next position of the snake
+def calc_snake_next_pos(snakearray, direction):
+    headnewposarray = [snakearray[0][0] + amt_to_add(direction, 'x'),
+                       snakearray[0][1] + amt_to_add(direction, 'y')]
+    snakearray.insert(0, headnewposarray)  # add head at beginning
+    del snakearray[len(snakearray)-1]  # delete last tail
+    return snakearray
+
+
+# returns the closest wall it is into
+def calc_snake_closest(snakearray, size_of_win):
+    closestup = snakearray[0][1]
+    closestright = size_of_win - snakearray[0][0]
+    closestdown = size_of_win - snakearray[0][1]
+    closestleft = snakearray[0][0]
+    temp = [closestup, closestright, closestdown, closestleft]
+    return temp
+
+
 def timing():
     pass  # aint done yet
 
 
 ###NEURAL NETWORK FUNCTIONS###
-def randomize_weight(input_neurons, low=-3, high=3):
+# SIGMOID FUNCTION
+def sigmoid_neg1_to_1(x):  # not going to define e to make it easier, just going to use the decimal value for it
+    return (2/(1 + 2.718281828459**-x)) - 1
+
+
+def rand_list(input_neurons, low=-3, high=3):
     temp = []
-    for neurons in input_neurons:
+    for neuron in input_neurons:
         temp.append(randint(low, high))
     return temp
 
 
-def calculate_layer(prev_layer, prev_weight_layer, bias_layer, desired_len):
+# calculate the input array
+def calc_input_arr(direction, closest, food, size_of_win):
+    temp = [direction,
+            closest[0]/size_of_win,
+            closest[1]/size_of_win,
+            closest[2]/size_of_win,
+            closest[3]/size_of_win,
+            food[0]/size_of_win,
+            food[1]/size_of_win,
+            1]
+    return temp
+
+
+def calculate_layer(prev_layer, prev_weight_layer, desired_len):
     total = 0
     temp = []
     for i in range(len(prev_weight_layer)):
-        temp_sub_weight = prev_weight_layer[i]
-        print("temp_sub_weight: ", temp_sub_weight)
-        for neuron, weight, bias in zip(prev_layer, temp_sub_weight, bias_layer):
-            total = total + (neuron*weight) + bias
+        for neuron, weight in zip(prev_layer, prev_weight_layer[i]):
+            total = total + (neuron*weight)
         temp.append(total)
         total = 0
     return temp
 # https: // www.programiz.com/python-programming/methods/built-in/zip
 
 
-def create_weight_layer():
-    pass  # not created yet
+def create_weight_layer(prev_layer, next_layer):
+    weights = []
+    for neuron in next_layer:
+        weights.append(rand_list(prev_layer))
+    return weights
+
+
+def neural_network(input_array, weights_1, weights_2):
+    input_array = sigmoid_neurons(input_array)
+    hidden_array = sigmoid_neurons(calculate_layer(input_array, weights_1, 6))
+    outputarray = sigmoid_neurons(calculate_layer(hidden_array, weights_2, 4))
+    return outputarray
+
+
+def dir_of_neural_net(outputarray):
+    temp = outputarray.index(max(outputarray))
+    print(temp)
+    return temp
 
 
 def sigmoid_neurons(neurons):
     temp = []
     for neuron in neurons:
-        temp.append(sigmoid(neuron))
+        temp.append(sigmoid_neg1_to_1(neuron))
     return temp

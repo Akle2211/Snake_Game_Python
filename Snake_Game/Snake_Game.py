@@ -14,98 +14,46 @@ def rand_pos():
     return [randint(0, size_of_win-1), randint(0, size_of_win-1)]
 
 
-def drawing_pixel(to_draw, color):
-    a = calculate_drawing(to_draw, color, step)
-    a.draw(win)
-
-
 ###VARIABLES###
+global step, size_of_win, width, height, win
 step = 10
 size_of_win = width = height = 40
+doexit = False  # for  exiting the game loop
+direction = 0  # 0 up, 1 right, 2 down, 3 left
 win = GraphWin('SNAKE', width*step, height*step, autoflush=False)
 win.setBackground('white')
 
 food = rand_pos()
-doexit = False  # for  exiting the game loop
-direction = 0  # 0 up, 1 right, 2 down, 3 left
-
 snakearray = [rand_pos()]  # first is the head of the snake
 
 fps = 0.005  # decrease me to make game faster
 refreshrate = 1/fps
 timeOld = round(time.time() * 1000)
 
+
 ###VARIABLES NEURAL NETWORK###
 # for calculating closest dis
-# closestup = snakearray[0][1]
-# closestright = size_of_win - snakearray[0][0]
-# closestdown = size_of_win - snakearray[0][1]
-# closestleft = snakearray[0][0]
-closestup = 22
-closestright = 23
-closestdown = 18
-closestleft = 18
-food = [20, 20]
+closest = calc_snake_closest(snakearray, size_of_win)
+print(closest)
 
+# pass for now
 score = 0
 begintime = time.time()  # time at the beginning of the game used for fitness
 runtime = time.time()
 fitness = 0
 
+# neural net stuff
+input_array = calc_input_arr(direction, closest, food, size_of_win)
+hidden_array = 6*[0]
+outputarray = 4*[0]
 
-###ARRAYS NEURAL NETWORK###
-# for network i will just try random array
-input_array = [closestup/size_of_win, closestdown/size_of_win, closestleft/size_of_win,
-               closestright/size_of_win, food[0]/size_of_win, food[1]/size_of_win]  # add the food coordinates
+weights_1 = create_weight_layer(input_array, hidden_array)
+print("weights1", weights_1)
+# bias1 = rand_list(input_array, 0, 0)
 
-print("input: ", input_array)
-input_array = sigmoid_neurons(input_array)
-print("input_array trough sigmoid: ", input_array)
-# weights_1 = [randomize_weight(input_array),
-#              randomize_weight(input_array),
-#              randomize_weight(input_array),
-#              randomize_weight(input_array),
-#              randomize_weight(input_array),
-#              randomize_weight(input_array)]
-weights_1 = [[1, 2, -2, 3, 0, -1],
-             [1, 2, -2, 3, 0, -1],
-             [1, 2, -2, 3, 0, -1],
-             [1, 2, -2, 3, 0, -1],
-             [1, 2, -2, 3, 0, -1],
-             [1, 2, -2, 3, 0, -1]]
-print("weights_1", weights_1)
-# bias1 = randomize_weight(input_array)
-bias1 = [1, 1, 1, 1, 1, 1]
-
-
-hidden_array = calculate_layer(input_array, weights_1, bias1, 6)
-print("hidden_array: ", hidden_array)
-hidden_array = sigmoid_neurons(hidden_array)
-print("hidden_array trough sigmoid: ", hidden_array)
-# weights_2 = [randomize_weight(input_array),
-#              randomize_weight(input_array),
-#              randomize_weight(input_array),
-#              randomize_weight(input_array),
-#              randomize_weight(input_array),
-#              randomize_weight(input_array)]
-weights_2 = [[-1, 0, -2, 3, 3, -1],
-             [-1, 0, -2, 3, 3, -1],
-             [-1, 0, -2, 3, 3, -1],
-             [-1, 0, -2, 3, 3, -1],
-             [-1, 0, -2, 3, 3, -1],
-             [-1, 0, -2, 3, 3, -1]]
-
+weights_2 = create_weight_layer(hidden_array, outputarray)
 print("weights2", weights_2)
-# bias2 = randomize_weight(hidden_array)
-bias2 = [1, 1, 1, 1, 1, 1]
-
-outputarray = calculate_layer(hidden_array, weights_2, bias2, 4)
-print("outputarray: ", outputarray)
-outputarray = sigmoid_neurons(outputarray)
-print("outputarray trough sigmoid: ", outputarray)
-
-print("")
-print("")
+# bias2 = rand_list(hidden_array, 0, 0)
 
 
 ###RUNNING###
@@ -117,34 +65,40 @@ while doexit == False:  # This is the game loop.
         timeOld = timeCurrent
         clear(win)
 
-        # c = Rectangle(Point(0, 0), Point(400, 400))
-        # c.setFill('white')                                  #this code isn't necessary anymore !
-        # c.draw(win)  # clear screen
+        # next position
+        snakearray = calc_snake_next_pos(snakearray, direction)
 
-        headnewposarray = [snakearray[0][0] +
-                           amt_to_add(direction, 'x'), snakearray[0][1] + amt_to_add(direction, 'y')]
-
-        snakearray.insert(0, headnewposarray)  # add head at beginning
-        del snakearray[len(snakearray)-1]  # delete last tail
-
-        if collision(snakearray):       # self collision ?
+        # self collision ?
+        if collision(snakearray):
             print("CRASHED!")
             doexit = True
 
+        # food collision ?
         if collision(snakearray, food):  # food collision ?
             food = rand_pos()
             print("YUM")
-            # add the latest element to the snake's body
             snakearray.append(snakearray[len(snakearray)-1])
 
-        drawing_pixel(snakearray, 'black')
-        drawing_pixel(food, 'red')
+        # neural net in the testing
+        closest = calc_snake_closest(snakearray, size_of_win)
+        input_array = calc_input_arr(direction, closest, food, size_of_win)
+        print(input_array)
+        outputarray = neural_network(input_array, weights_1, weights_2)
+        print(outputarray)
+
+        # drawing everything
+        drawing_pixel(snakearray, 'black', step, win)
+        drawing_pixel(food, 'red', step, win)
         update()
 
+        # checking user input
         k = win.checkKey()  # register the last key that was pressed
         if k == "e":
             doexit = True  # Click e to exit!
-        direction = check_key(k, direction)
+
+        # current direction
+        # direction = check_key(k, direction)
+        direction = dir_of_neural_net(outputarray)
 
 
 win.getMouse()  # click mouse to close the game
