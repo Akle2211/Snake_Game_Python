@@ -47,23 +47,27 @@ def drawing_pixel(to_draw, color, step, win):
         a.draw(win)
 
 
+def rand_pos(size_of_win):
+    return [randint(0, size_of_win-1), randint(0, size_of_win-1)]
+
+
 def check_key(k, direction):
-    if k == "Right":
+    if k == "Right" or k == 1:
         if direction != 3:  # check if snake isn't going left
             return 1
         return direction
 
-    elif k == "Left":
+    elif k == "Left" or k == 3:
         if direction != 1:  # check if snake isn't going right
             return 3
         return direction
 
-    elif k == "Up":
+    elif k == "Up" or k == 0:
         if direction != 2:  # check if snake isn't going down
             return 0
         return direction
 
-    elif k == "Down":
+    elif k == "Down" or k == 2:
         if direction != 0:  # check if snake isn't going up
             return 2
         return direction
@@ -104,70 +108,60 @@ def calc_snake_closest(snakearray, size_of_win):
     return temp
 
 
+# calculate the distance from wall/body
+def closest_any(snakearray, closest, size_of_win):
+    # First find the closest distance from the body to the snake
+    for i in range(len(snakearray)-1):
+
+        # is body right to head ?
+        if snakearray[0][0] - snakearray[i+1][0] < 0:
+            if abs(snakearray[0][0] - snakearray[i+1][0]) < closest[1]:
+                closest[1] = abs(snakearray[0][0] - snakearray[i+1][0])
+        else:
+            # no, closestright is the wall
+            closest[1] = size_of_win - snakearray[0][0]
+
+        # is body left to head ?
+        if snakearray[0][0] - snakearray[i+1][0] > 0:
+            if snakearray[0][0] - snakearray[i+1][0] < closest[3]:
+                closest[3] = abs(snakearray[0][0] - snakearray[i+1][0])
+        else:
+            # no, closestleft is the wall
+            closest[3] = size_of_win - snakearray[0][0]
+
+        # is body above head ?
+        if snakearray[0][1] - snakearray[i+1][1] > 0:
+            if snakearray[0][1] - snakearray[i+1][1] < closest[0]:
+                closest[0] = abs(snakearray[0][1] - snakearray[i+1][1])
+        else:
+            # no, closestup is the wall
+            closest[0] = size_of_win - snakearray[0][0]
+
+        # is body below head ?
+        if snakearray[0][1] - snakearray[i+1][1] < 0:
+            if abs(snakearray[0][1] - snakearray[i+1][1]) < closest[2]:
+                closest[2] = abs(snakearray[0][1] - snakearray[i+1][1])
+        else:  # no, closestdown is the wall
+            closest[2] = size_of_win - snakearray[0][0]
+
+    return closest
+
+
+def walls(snakearray, size_of_win):
+    if snakearray[0][0] == size_of_win or snakearray[0][1] == size_of_win or snakearray[0][0] == -1 or snakearray[0][1] == -1:
+        print("YOU LOST")
+        return True
+
+
 def timing():
     pass  # aint done yet
 
-
-###NEURAL NETWORK FUNCTIONS###
-# SIGMOID FUNCTION
-def sigmoid_neg1_to_1(x):  # not going to define e to make it easier, just going to use the decimal value for it
-    return (2/(1 + 2.718281828459**-x)) - 1
+###FILING SYSTEM FUNCTIONS###
 
 
-def rand_list(input_neurons, low=-3, high=3):
-    temp = []
-    for neuron in input_neurons:
-        temp.append(randint(low, high))
-    return temp
-
-
-# calculate the input array
-def calc_input_arr(direction, closest, food, size_of_win):
-    temp = [direction,
-            closest[0]/size_of_win,
-            closest[1]/size_of_win,
-            closest[2]/size_of_win,
-            closest[3]/size_of_win,
-            food[0]/size_of_win,
-            food[1]/size_of_win,
-            1]
-    return temp
-
-
-def calculate_layer(prev_layer, prev_weight_layer, desired_len):
-    total = 0
-    temp = []
-    for i in range(len(prev_weight_layer)):
-        for neuron, weight in zip(prev_layer, prev_weight_layer[i]):
-            total = total + (neuron*weight)
-        temp.append(total)
-        total = 0
-    return temp
-# https: // www.programiz.com/python-programming/methods/built-in/zip
-
-
-def create_weight_layer(prev_layer, next_layer):
-    weights = []
-    for neuron in next_layer:
-        weights.append(rand_list(prev_layer))
-    return weights
-
-
-def neural_network(input_array, weights_1, weights_2):
-    input_array = sigmoid_neurons(input_array)
-    hidden_array = sigmoid_neurons(calculate_layer(input_array, weights_1, 6))
-    outputarray = sigmoid_neurons(calculate_layer(hidden_array, weights_2, 4))
-    return outputarray
-
-
-def dir_of_neural_net(outputarray):
-    temp = outputarray.index(max(outputarray))
-    print(temp)
-    return temp
-
-
-def sigmoid_neurons(neurons):
-    temp = []
-    for neuron in neurons:
-        temp.append(sigmoid_neg1_to_1(neuron))
-    return temp
+def writing_files(file, values):
+    for value in values:  # Output weights
+        file.write(str(value))
+        if values.index(value) < len(values):
+            file.write(",")
+    file.close()
