@@ -1,6 +1,10 @@
 # This is a Snake game by Henrijs and Luca, using the
 # standard graphics.py library !
+#
+# this is Henrijs's script
+#
 # 28 april 2018
+
 
 ###IMPORTS###
 from graphics import *
@@ -8,6 +12,7 @@ import time
 from random import randint
 import random
 from function_Snake_Game import *
+from Files_function import *
 from Neural_Network_Function_Snake_Game import *
 
 ###FUNCTIONS###
@@ -18,7 +23,7 @@ def runsnakegamextimes(x):
 
         ###VARIABLES###
         # for calculating closest dis and files
-        aweights1 = open(str(k)+"weights_1", "w")
+        aweights1 = open(str(k)+"weights1", "w")
         aweights11 = open(str(k)+"weights11", "w")
         aweights111 = open(str(k)+"weights111", "w")
         aweights1111 = open(str(k)+"weights1111", "w")
@@ -58,41 +63,38 @@ def runsnakegamextimes(x):
 
         snakearray = [rand_pos(size_of_win)]  # first is the head of the snake
 
-        fps = 0.1  # decrease me to make game faster
+        fps = 1  # increase me to make game faster
         refreshrate = 1/fps
         timeOld = round(time.time() * 1000)
 
         ###VARIABLES NEURAL NETWORK###
         # for calculating closest dis
-        closest = calc_snake_closest(snakearray, size_of_win)
+        closest = closest_any(snakearray, size_of_win)
 
         ###ARRAYS###
         # for netowrk i will just try random array
         input_array = calc_input_arr(direction, closest, food, size_of_win)
-        print(input_array)
-
+        print("input_array: ", input_array)
         hidden_array = 7*[0]
         outputarray = 4*[0]
         weights_1 = create_weight_layer(input_array, hidden_array)
+        print("weights_1: ", weights_1)
         weights_2 = create_weight_layer(hidden_array, outputarray)
         print(weights_1)
         print(weights_2)
 
-        biashidden1 = []
-        biasoutput = []
-
-        for i in range(7):
-            biashidden1.append(rand_list)
-        for i in range(4):
-            biasoutput.append(rand_list)
+        # biashidden1 = []
+        # biasoutput = []
+        #
+        # for i in range(7):
+        #     biashidden1.append(rand_list())
+        # for i in range(4):
+        #     biasoutput.append(rand_list())
 
         def neuralnetwork(input_array, weights_1, biashidden1, weights_2):
 
-            hiddenneuron = sigmoid_neurons(calculate_layer(input_array, weights_1))
-            print(hiddenneuron)
-            print(weights_1)
-            outputneuron = []
-            outputneuron = sigmoid_neurons(calculate_layer(hiddenneuron, weights_2))
+            hiddenneurons = sigmoid_neurons(calculate_layer(input_array, weights_1))
+            outputneurons = sigmoid_neurons(calculate_layer(hiddenneuron, weights_2))
 
             return dir_of_neural_net(outputneuron)
 
@@ -112,39 +114,30 @@ def runsnakegamextimes(x):
                 runtime = time.time()
                 timealive = int(round(runtime-begintime))
                 fitness = timealive+score*10
-                #print("your fitness is: %s")%fitness
 
-                # calculate next pos. of the snake
+                ###INIT NEURAL NET###
+                closest = closest_any(snakearray, height, width)
+                input_array = [direction, closest[0], closest[1],
+                               closest[2], closest[3], food[0], food[1]]
+                outputarray = neural_network(input_array, weights_1, weights_2)
+                direction = dir_of_neural_net(outputarray)
+
+                ###POS AND COLL###
                 snakearray = calc_snake_next_pos(snakearray, direction)
-
-                # wall collision
-                if walls(snakearray, size_of_win):
-                    print("YOU LOST")
-                    doexit = True
-
-                # self collision
-                if collision(snakearray):
-                    print("CRASHED!")
-                    doexit = True
-
-                # food collision
-                if collision(snakearray, food):
+                if food_coll(snakearray, food):
                     food = rand_pos(size_of_win)
                     score = score + 10
                     snakearray.append(snakearray[len(snakearray)-1])
+                if wall_or_self_coll(closest):
+                    print("YOU LOST")
+                    doexit = True
 
+                ###DRAW###
                 drawing_pixel(snakearray, 'black', step, win)
                 drawing_pixel(food, 'red', step, win)
                 update()
 
-                closest = closest_any(snakearray, closest, size_of_win)
-                input_array = calc_input_arr(direction, closest, food, size_of_win)
-
-                for i in range(len(input_array)):
-                    if i == 0:
-                        input_array[i] = sigmoid_neg1_to_1(input_array[i])
-
-                neuraldirection = neuralnetwork(input_array, weights_1, biashidden1, weights_2)
+                neuraldirection = neural_network(input_array, weights_1, weights_2)
                 direction = check_key(neuraldirection, direction)
 
                 k = win.checkKey()  # register the last key that was pressed
@@ -152,13 +145,18 @@ def runsnakegamextimes(x):
                     doexit = True  # Click e to exit!
                 #direction = check_key(k, direction)
 
+        ###GOOD###
         win.close()
+        print("len of input_array: ", len(input_array))
+        print("len of weights_1: ", len(weights_1))
+        print("len of file_weights_1: ", len(file_weights_1))
 
-        for i in range(7):
+        ###GOOD###
+        for i in range(len(hidden_array)):
             writing_files(file_weights_1[i], weights_1[i])
-        for i in range(4):
+        for i in range(len(outputarray)):
             writing_files(file_weights_2[i], weights_2[i])
-        writing_files(abiashidden1, biashidden1)
+        #writing_files(abiashidden1, biashidden1)
 
 
 runsnakegamextimes(100)
