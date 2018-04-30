@@ -24,6 +24,10 @@ def sigmoid(x):  # not going to define e
     return 1/(1 + 2.718281828459**-x)
 
 
+#takes in a list of neurons(input_neurons), then create a list 
+#of random integers the size of the list.
+#if input_neurons is instead a number, it will return a list 
+#the size of that number, full of random integers
 def rand_list(input_neurons, low=-1, high=1):
     temp = []
     if type(input_neurons) is int:
