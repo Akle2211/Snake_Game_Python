@@ -7,6 +7,8 @@
 
 
 ###FILING SYSTEM FUNCTIONS###
+#writing_files takes an empty text file and a list of values, 
+#then write each of these value in the text file.
 def writing_files(file, values):
     for value in values:  # Output weights
         file.write(str(value))
@@ -16,6 +18,9 @@ def writing_files(file, values):
     file.close()
 
 
+#assign_weight_layer takes in a list of text files, 
+#and for each text file, it assign the values in a list (temp2),
+#then each list(temp2) is assigned to a big, general list(temp3)
 def assign_weight_layer(file_weights):
     temp = []
     temp2 = []
