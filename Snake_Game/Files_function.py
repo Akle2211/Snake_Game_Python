@@ -36,3 +36,14 @@ def assign_weight_layer(file_weights):
         temp3.append(temp2)
     print("temp3: ", temp3)
     return temp3
+
+
+# Henrijs's function, to write text files in a seperate folder 
+# rather than in the main script folder.
+# (really neat code btw ;) )
+def write_file_to_folder(folder_name,filename, what_to_write):
+    if not os.path.exists(folder_name):#check if dir exists
+        os.makedirs(folder_name)#make it if it doesnt
+    f = open(folder_name + "//" + filename, "w")
+    f.write(what_to_write)
+    f.close()
