@@ -14,9 +14,14 @@ import random
 
 
 ###NEURAL NETWORK FUNCTIONS###
-# SIGMOID FUNCTION
+
+#luca's sigmoid:
 def sigmoid_neg1_to_1(x):  # not going to define e
     return (2/(1 + 2.718281828459**-x)) - 1
+
+#Henrijs's sigmoid
+def sigmoid(x):  # not going to define e
+    return 1/(1 + 2.718281828459**-x)
 
 
 def rand_list(input_neurons, low=-1, high=1):
