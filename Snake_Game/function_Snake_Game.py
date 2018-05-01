@@ -33,7 +33,7 @@ def amt_to_add(direction, x_or_y):
 def clear(win):
     for item in win.items[:]:
         item.undraw()
-    # win.update()  #update() is done in the running game
+    # win.update()
 
 
 # draws either one set of position or an array of position
@@ -50,14 +50,14 @@ def drawing_pixel(to_draw, color, step, win):
         a.draw(win)
 
 
-#return a random set of position
+# return a random set of position
 def rand_pos(width, height='fool'):
     if height == 'fool':
         height = width
     return [randint(0, width-1), randint(0, height-1)]
 
 
-#check_key can work with both user input and neural output
+# check_key can work with both user input and neural output
 def check_key(k, direction):
     if k == "Right" or k == 1:
         if direction != 3:  # check if snake isn't going left
@@ -79,7 +79,7 @@ def check_key(k, direction):
         return direction
 
 
-# check if a food collision happened
+# check if a collision happened
 def food_coll(snakearray, food):
     if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
         return True
@@ -88,13 +88,6 @@ def food_coll(snakearray, food):
 
 # calculate the next position of the snake
 def calc_snake_next_pos(snakearray, direction):
-    def amt_to_add(direction, x_or_y):
-        if direction == 0 and x_or_y == 'x' or direction == 2 and x_or_y == 'y':
-            return 1    # right or down
-        elif direction == 3 and x_or_y == 'x' or direction == 0 and x_or_y == 'y':
-            return -1   # left or up
-        else:
-            return 0    # no keys pressed, keep direction the same
     headnewposarray = [snakearray[0][0] + amt_to_add(direction, 'x'),
                        snakearray[0][1] + amt_to_add(direction, 'y')]
     snakearray.insert(0, headnewposarray)  # add head at beginning
@@ -132,8 +125,6 @@ def closest_any(snakearray, width, height='fool'):
     if closest[1] > width - snakearray[0][0]:  # right wall
         closest[1] = width - snakearray[0][0]
 
-    print("closest: ", closest)
-    print("snakearray: ", snakearray)
     return closest
 
 
@@ -141,3 +132,29 @@ def wall_or_self_coll(closest):
     if min(closest) <= 0:
         return True
     return False
+
+
+def calc_fit(timefrombeginning, gamespeed, score):
+    currenttime = time.time()
+    return (currenttime-timefrombeginning)*gamespeed + score
+
+
+def istimeup(lengame, gamespeed):
+    currenttime = time.time()
+    if (currenttime-lengame)*gamespeed > 5:
+        return True
+    else:
+        return False
+
+
+def check_if_direction_valid(direction_neural, direction):
+    if direction == 0 and direction_neural == 2:  # cannot go down when going up
+        return direction
+    if direction == 1 and direction_neural == 3:
+        return direction
+    if direction == 3 and direction_neural == 1:
+        return direction
+    if direction == 2 and direction_neural == 0:
+        return direction
+    else:
+        return direction_neural
