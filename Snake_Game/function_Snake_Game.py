@@ -14,7 +14,11 @@ from random import randint
 
 ###FUNCTIONS###
 
-# return where to add a pixel
+# return where to add a pixel, it is used in the calc_snake_next_pos()
+# so that the snake never travels in diagonal by mistake
+# basically, it will add +1 at the snake x or y head position.
+# the else at the end should never be attained in normal condition.
+# otherwise, the snake would stop moving.
 def amt_to_add(direction, x_or_y):
     if direction == 1 and x_or_y == 'x' or direction == 2 and x_or_y == 'y':
         return 1    # right or down
@@ -29,7 +33,7 @@ def amt_to_add(direction, x_or_y):
 def clear(win):
     for item in win.items[:]:
         item.undraw()
-    # win.update()
+    # win.update()  #update() is done in the running game
 
 
 # draws either one set of position or an array of position
@@ -46,12 +50,14 @@ def drawing_pixel(to_draw, color, step, win):
         a.draw(win)
 
 
+#return a random set of position
 def rand_pos(width, height='fool'):
     if height == 'fool':
         height = width
     return [randint(0, width-1), randint(0, height-1)]
 
 
+#check_key can work with both user input and neural output
 def check_key(k, direction):
     if k == "Right" or k == 1:
         if direction != 3:  # check if snake isn't going left
@@ -73,7 +79,7 @@ def check_key(k, direction):
         return direction
 
 
-# check if a collision happened
+# check if a food collision happened
 def food_coll(snakearray, food):
     if snakearray[0][0] == food[0] and snakearray[0][1] == food[1]:  # check if the food has been eaten
         return True
